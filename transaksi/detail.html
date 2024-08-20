@@ -37,8 +37,8 @@
             }
 
             .receipt-details p {
-                margin: 0;
                 font-size: 14px;
+                text-align: center;
             }
 
             .receipt-items {
@@ -57,7 +57,7 @@
                 display: flex;
                 justify-content: space-between;
                 font-size: 14px;
-                margin-bottom: 5px;
+                margin-bottom: 15px;
             }
 
             .receipt-total {
@@ -69,17 +69,77 @@
             .text-end {
                 text-align: end;
             }
+
+            @media print {
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background: none;
+                }
+
+                .container {
+                    padding: 0;
+                    margin: 0;
+                }
+
+                .receipt {
+                    border: none;
+                    padding: 0;
+                    width: 100%;
+                    max-width: none;
+                    background-color: #fff;
+                    font-size: 12px;
+                }
+
+                .receipt-header h2 {
+                    font-size: 18px;
+                }
+
+                .receipt-header p {
+                    font-size: 12px;
+                }
+
+                .receipt-details p,
+                .receipt-items li,
+                .receipt-total {
+                    font-size: 12px;
+                }
+
+                .receipt-items ul {
+                    padding-left: 0;
+                }
+
+                .receipt-items li {
+                    margin-bottom: 12px;
+                }
+
+                .receipt-items h5 {
+                    font-size: 14px;
+                }
+
+                .receipt-total {
+                    font-size: 14px;
+                    font-weight: bold;
+                }
+
+                .text-end {
+                    text-align: right;
+                }
+
+                @page {
+                    margin: 0;
+                }
+
+                button {
+                    display: none;
+                }
+            }
         </style>
     </head>
 
     <body>
         <div class="container mt-5">
             <div class="receipt">
-                <div class="receipt-header">
-                    <h2>Nama Toko Anda</h2>
-                    <p>Alamat Toko, Kota, Kode Pos</p>
-                    <p>Telp: 012-3456789</p>
-                </div>
 
                 <div class="receipt-details" id="transactionDetail">
                     <!-- Transaction details will be populated here -->
@@ -118,26 +178,34 @@
                     if (snapshot.exists()) {
                         const transaction = snapshot.val();
 
-                        transactionDetail.innerHTML = `
-                    <p><strong>Kode Transaksi:</strong> ${transaction.transactionCode}</p>
-                    <p><strong>Tanggal:</strong> ${new Date(transaction.date).toLocaleString()}</p>
-                    <p><strong>Total Pembayaran:</strong> Rp ${transaction.totalPayment.toLocaleString()}</p>
-                    <p><strong>Uang Diterima:</strong> Rp ${transaction.cashReceived.toLocaleString()}</p>
-                    <p><strong>Kembalian:</strong> Rp ${transaction.change.toLocaleString()}</p>
-
-                    <div class="receipt-items">
-                        <h5>Daftar Produk:</h5>
-                        <ul>
-                            ${transaction.items.map(item => `
-                                <li>${item.name} <span>${item.quantity} x Rp ${item.price.toLocaleString()}</span></li>
-                            `).join('')}
-                        </ul>
-                    </div>
-
-                    <div class="receipt-total">
-                        <p>Total: Rp ${transaction.totalPayment.toLocaleString()}</p>
-                    </div>
-                `;
+                        transactionDetail.innerHTML = `                    
+                        <p><strong>Muji Perkasa</strong></p>
+                        <p class="text-center">Jl. Merdeka No.123, Jakarta</p>
+                        <p class="text-center">Telp: 012-3456789</p>
+                        <hr>
+                        <p><strong>Kode Transaksi:</strong> ${transaction.transactionCode}</p>
+                        <p><strong>Tanggal:</strong> ${new Date(transaction.date).toLocaleString()}</p>
+                        <hr>
+                        ================================                        
+                        <div class="receipt-items">
+                            <h5>Daftar Produk:</h5>
+                            <ul>
+                                ${transaction.items.map(item => `
+                                    <li>
+                                        ${item.name} <span>${item.quantity} x Rp ${item.price.toLocaleString()} = Rp ${item.subtotal.toLocaleString()}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        <hr>
+                        ================================
+                        <p><strong>Total Pembayaran:</strong> Rp ${transaction.totalPayment.toLocaleString()}</p>
+                        <p><strong>Uang Diterima:</strong> Rp ${transaction.cashReceived.toLocaleString()}</p>
+                        <p><strong>Kembalian:</strong> Rp ${transaction.change.toLocaleString()}</p>
+                        <hr>
+                        <p class="text-center">Terima kasih telah berbelanja!</p>
+                        <br>
+                    `;
                     } else {
                         transactionDetail.innerHTML = '<p>Transaksi tidak ditemukan.</p>';
                     }
@@ -169,8 +237,6 @@
                     alert('Gagal menghubungkan ke printer. Silakan coba lagi.');
                 }
             });
-
-
         </script>
 
     </body>
