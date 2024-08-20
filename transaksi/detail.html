@@ -7,7 +7,6 @@
         <title>Detail Transaksi</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <style>
-            /* Styling umum untuk layar */
             .receipt {
                 max-width: 400px;
                 margin: 0 auto;
@@ -17,57 +16,78 @@
                 background-color: #fff;
             }
 
-            /* Styling khusus untuk cetak */
+            .receipt-header {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .receipt-header h2 {
+                margin-bottom: 5px;
+                font-size: 24px;
+            }
+
+            .receipt-header p {
+                margin: 0;
+                font-size: 14px;
+                color: #666;
+            }
+
+            .receipt-details {
+                margin-bottom: 20px;
+            }
+
+            .receipt-details p {
+                font-size: 14px;
+                text-align: center;
+            }
+
+            .receipt-items {
+                margin-bottom: 20px;
+                border-bottom: 1px dashed #ddd;
+                padding-bottom: 10px;
+            }
+
+            .receipt-items ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .receipt-items li {
+                display: flex;
+                justify-content: space-between;
+                font-size: 14px;
+                margin-bottom: 15px;
+            }
+
+            .receipt-total {
+                text-align: right;
+                font-size: 16px;
+                font-weight: bold;
+            }
+
+            .text-end {
+                text-align: end;
+            }
+
             @media print {
                 body {
-                    background-color: white;
+                    margin: 0;
+                    padding: 0;
+                    background: none;
                 }
 
-                .receipt {
-                    width: 100%;
-                    max-width: none;
-                    border: none;
+                .container {
                     padding: 0;
                     margin: 0;
                 }
 
-                .receipt-header h2 {
-                    font-size: 20px;
-                }
-
-                .receipt-header p {
-                    font-size: 12px;
-                    color: #333;
-                }
-
-                .receipt-items li {
-                    margin-bottom: 10px;
-                }
-
-                .receipt-total {
-                    font-size: 14px;
-                }
-
-                .text-end {
-                    text-align: end;
-                }
-
-                /* Sembunyikan tombol saat mencetak */
-                #printButton {
-                    display: none;
-                }
-
-                /* Pengaturan margin dan padding khusus cetak */
-                @page {
-                    size: auto;
-                    margin: 10mm;
-                }
-            }
-
-            /* Media query untuk perangkat mobile */
-            @media (max-width: 600px) {
                 .receipt {
-                    padding: 10px;
+                    border: none;
+                    padding: 0;
+                    width: 100%;
+                    max-width: none;
+                    background-color: #fff;
                     font-size: 12px;
                 }
 
@@ -76,19 +96,45 @@
                 }
 
                 .receipt-header p {
-                    font-size: 10px;
+                    font-size: 12px;
+                }
+
+                .receipt-details p,
+                .receipt-items li,
+                .receipt-total {
+                    font-size: 12px;
+                }
+
+                .receipt-items ul {
+                    padding-left: 0;
                 }
 
                 .receipt-items li {
-                    margin-bottom: 5px;
+                    margin-bottom: 12px;
+                }
+
+                .receipt-items h5 {
+                    font-size: 14px;
                 }
 
                 .receipt-total {
                     font-size: 14px;
+                    font-weight: bold;
+                }
+
+                .text-end {
+                    text-align: right;
+                }
+
+                @page {
+                    margin: 0;
+                }
+
+                button {
+                    display: none;
                 }
             }
         </style>
-
     </head>
 
     <body>
@@ -139,6 +185,8 @@
                         <hr>
                         <p><strong>Kode Transaksi:</strong> ${transaction.transactionCode}</p>
                         <p><strong>Tanggal:</strong> ${new Date(transaction.date).toLocaleString()}</p>
+                        <hr>
+                        ================================                        
                         <div class="receipt-items">
                             <h5>Daftar Produk:</h5>
                             <ul>
@@ -149,14 +197,13 @@
                                 `).join('')}
                             </ul>
                         </div>
-                        
-
-                        <hr>
-                        ================================                        
-                        
                         <hr>
                         ================================
-                        
+                        <p><strong>Total Pembayaran:</strong> Rp ${transaction.totalPayment.toLocaleString()}</p>
+                        <p><strong>Uang Diterima:</strong> Rp ${transaction.cashReceived.toLocaleString()}</p>
+                        <p><strong>Kembalian:</strong> Rp ${transaction.change.toLocaleString()}</p>
+                        <hr>
+                        <p class="text-center">Terima kasih telah berbelanja!</p>
                         <br>
                     `;
                     } else {
