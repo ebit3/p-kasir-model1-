@@ -43,7 +43,6 @@
 
             .receipt-items {
                 margin-bottom: 20px;
-                border-bottom: 1px dashed #ddd;
                 padding-bottom: 10px;
             }
 
@@ -181,11 +180,9 @@
                         transactionDetail.innerHTML = `                    
                         <p><strong>Muji Perkasa</strong></p>
                         <p class="text-center">Jl. Merdeka No.123, Jakarta</p>
-                        <p class="text-center">Telp: 012-3456789</p>
-                        <hr>
+                        <p class="text-center">Telp: 012-3456789</p>                        
                         <p><strong>Kode Transaksi:</strong> ${transaction.transactionCode}</p>
-                        <p><strong>Tanggal:</strong> ${new Date(transaction.date).toLocaleString()}</p>
-                        <hr>
+                        <p><strong>Tanggal:</strong> ${new Date(transaction.date).toLocaleString()}</p>                                            
                         ================================                        
                         <div class="receipt-items">
                             <h5>Daftar Produk:</h5>
@@ -196,13 +193,11 @@
                                     </li>
                                 `).join('')}
                             </ul>
-                        </div>
-                        <hr>
+                        </div>                                   
                         ================================
                         <p><strong>Total Pembayaran:</strong> Rp ${transaction.totalPayment.toLocaleString()}</p>
                         <p><strong>Uang Diterima:</strong> Rp ${transaction.cashReceived.toLocaleString()}</p>
-                        <p><strong>Kembalian:</strong> Rp ${transaction.change.toLocaleString()}</p>
-                        <hr>
+                        <p><strong>Kembalian:</strong> Rp ${transaction.change.toLocaleString()}</p>                        
                         <p class="text-center">Terima kasih telah berbelanja!</p>
                         <br>
                     `;
