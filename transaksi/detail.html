@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Detail Transaksi</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            .receipt {
+                max-width: 400px;
+                margin: 0 auto;
+                border: 1px solid #ddd;
+                padding: 20px;
+                border-radius: 10px;
+                background-color: #fff;
+            }
+
+            .receipt-header {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .receipt-header h2 {
+                margin-bottom: 5px;
+                font-size: 24px;
+            }
+
+            .receipt-header p {
+                margin: 0;
+                font-size: 14px;
+                color: #666;
+            }
+
+            .receipt-details {
+                margin-bottom: 20px;
+            }
+
+            .receipt-details p {
+                margin: 0;
+                font-size: 14px;
+            }
+
+            .receipt-items {
+                margin-bottom: 20px;
+                border-bottom: 1px dashed #ddd;
+                padding-bottom: 10px;
+            }
+
+            .receipt-items ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .receipt-items li {
+                display: flex;
+                justify-content: space-between;
+                font-size: 14px;
+                margin-bottom: 5px;
+            }
+
+            .receipt-total {
+                text-align: right;
+                font-size: 16px;
+                font-weight: bold;
+            }
+
+            .text-end {
+                text-align: end;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container mt-5">
+            <div class="receipt">
+                <div class="receipt-header">
+                    <h2>Nama Toko Anda</h2>
+                    <p>Alamat Toko, Kota, Kode Pos</p>
+                    <p>Telp: 012-3456789</p>
+                </div>
+
+                <div class="receipt-details" id="transactionDetail">
+                    <!-- Transaction details will be populated here -->
+                </div>
+
+                <div class="text-end">
+                    <button id="printButton" class="btn btn-primary">Print</button>
+                </div>
+            </div>
+        </div>
+
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+            import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyAPRiQzK5Pozzr79bdbnKJ4IRePqsh1F_Q",
+                authDomain: "curdprojek.firebaseapp.com",
+                databaseURL: "https://curdprojek-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "curdprojek",
+                storageBucket: "curdprojek.appspot.com",
+                messagingSenderId: "652515266449",
+                appId: "1:652515266449:web:9ff63cf0548e94340cd430",
+                measurementId: "G-B9DJ4L79G2"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+
+            const transactionId = new URLSearchParams(window.location.search).get('id');
+            const transactionDetail = document.getElementById('transactionDetail');
+
+            function loadTransactionDetail(id) {
+                const transactionRef = ref(database, `transactions/${id}`);
+                get(transactionRef).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const transaction = snapshot.val();
+
+                        transactionDetail.innerHTML = `
+                        <p><strong>Kode Transaksi:</strong> ${transaction.transactionCode}</p>
+                        <p><strong>Tanggal:</strong> ${new Date(transaction.date).toLocaleString()}</p>
+                        <p><strong>Total Pembayaran:</strong> Rp ${transaction.totalPayment.toLocaleString()}</p>
+                        <p><strong>Uang Diterima:</strong> Rp ${transaction.cashReceived.toLocaleString()}</p>
+                        <p><strong>Kembalian:</strong> Rp ${transaction.change.toLocaleString()}</p>
+
+                        <div class="receipt-items">
+                            <h5>Daftar Produk:</h5>
+                            <ul>
+                                ${transaction.items.map(item => `
+                                    <li>${item.name} <span>${item.quantity} x Rp ${item.price.toLocaleString()}</span></li>
+                                `).join('')}
+                            </ul>
+                        </div>
+
+                        <div class="receipt-total">
+                            <p>Total: Rp ${transaction.totalPayment.toLocaleString()}</p>
+                        </div>
+                    `;
+                    } else {
+                        transactionDetail.innerHTML = '<p>Transaksi tidak ditemukan.</p>';
+                    }
+                }).catch((error) => {
+                    console.error('Error loading transaction details:', error);
+                    transactionDetail.innerHTML = '<p>Terjadi kesalahan saat memuat detail transaksi.</p>';
+                });
+            }
+
+            loadTransactionDetail(transactionId);
+
+            document.getElementById('printButton').addEventListener('click', function () {
+                window.print();
+            });
+
+        </script>
+
+    </body>
+
+</html>

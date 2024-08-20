@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Halaman Transaksi</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+
+    <body>
+        <div class="container mt-5">
+            <nav class="navbar navbar-expand-lg bg-body-tertiary">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="#">Navbar</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                        <div class="navbar-nav">
+                            <a class="nav-link active" aria-current="page" href="../index.html">Beranda</a>
+                            <a class="nav-link active" aria-current="page" href="../produk/index.html">Produk</a>
+                            <a class="nav-link active" aria-current="page" href="../kategori/index.html">Kategori</a>
+                            <a class="nav-link active" aria-current="page" href="transaksi.html">Transaksi</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <div class="container mt-5">
+            <h1 class="mb-4">Transaksi</h1>
+
+            <!-- Form untuk menambahkan produk ke keranjang -->
+            <form id="addProductForm" class="mb-4">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label for="productSelect" class="form-label">Pilih Produk</label>
+                        <select class="form-select" id="productSelect" required>
+                            <!-- Options akan diisi dengan produk dari Firebase -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="productQuantity" class="form-label">Jumlah</label>
+                        <input type="number" class="form-control" id="productQuantity" required>
+                    </div>
+                    <div class="col-md-12 text-end">
+                        <button type="submit" class="btn btn-primary">Tambah ke Keranjang</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Tabel keranjang -->
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nama Produk</th>
+                        <th>Harga</th>
+                        <th>Jumlah</th>
+                        <th>Subtotal</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="cartTableBody">
+                    <!-- Data keranjang akan dimuat di sini -->
+                </tbody>
+            </table>
+
+            <!-- Total dan kembalian -->
+            <div class="row g-3 align-items-center mb-5">
+                <div class="col-md-4">
+                    <label for="totalAmount" class="form-label">Total</label>
+                    <input type="number" class="form-control" id="totalAmount" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label for="cashReceived" class="form-label">Jumlah Uang</label>
+                    <input type="number" class="form-control" id="cashReceived" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="change" class="form-label">Kembalian</label>
+                    <input type="number" class="form-control" id="change" readonly>
+                </div>
+                <div class="col-md-12 text-end mt-3">
+                    <button id="completeTransaction" class="btn btn-success mt-3">Selesaikan Transaksi</button>
+                </div>
+            </div>
+        </div>
+
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+            import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyAPRiQzK5Pozzr79bdbnKJ4IRePqsh1F_Q",
+                authDomain: "curdprojek.firebaseapp.com",
+                databaseURL: "https://curdprojek-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "curdprojek",
+                storageBucket: "curdprojek.appspot.com",
+                messagingSenderId: "652515266449",
+                appId: "1:652515266449:web:9ff63cf0548e94340cd430",
+                measurementId: "G-B9DJ4L79G2"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+            const productSelect = document.getElementById('productSelect');
+            let products = [];
+            let cart = JSON.parse(localStorage.getItem('cart')) || []; // Load cart from localStorage or empty array
+
+            // Mengambil data produk dari Firebase
+            function loadProducts() {
+                const productsRef = ref(database, 'products');
+                onValue(productsRef, (snapshot) => {
+                    products = [];
+                    productSelect.innerHTML = '';
+
+                    snapshot.forEach((childSnapshot) => {
+                        const product = childSnapshot.val();
+                        products.push({ id: childSnapshot.key, ...product });
+
+                        const option = document.createElement('option');
+                        option.value = childSnapshot.key;
+                        option.textContent = `${product.name} - ${product.price}`;
+                        productSelect.appendChild(option);
+                    });
+                });
+            }
+
+            loadProducts();
+            updateCartTable(); // Update cart table on page load
+
+            document.getElementById('addProductForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const selectedProductId = productSelect.value;
+                const selectedProduct = products.find(product => product.id === selectedProductId);
+                const productQuantityInput = document.getElementById('productQuantity');
+                const productQuantity = parseInt(productQuantityInput.value);
+
+                const existingProduct = cart.find(item => item.id === selectedProductId);
+                if (existingProduct) {
+                    existingProduct.quantity += productQuantity;
+                } else {
+                    const product = { id: selectedProductId, name: selectedProduct.name, price: selectedProduct.price, quantity: productQuantity };
+                    cart.push(product);
+                }
+
+                localStorage.setItem('cart', JSON.stringify(cart)); // Save cart to localStorage
+                updateCartTable();
+
+                // Mengosongkan nilai input qty setelah produk ditambahkan ke keranjang
+                productQuantityInput.value = '';
+            });
+
+            function updateCartTable() {
+                const cartTableBody = document.getElementById('cartTableBody');
+                cartTableBody.innerHTML = '';
+
+                let total = 0;
+                cart.forEach((product, index) => {
+                    const subtotal = product.price * product.quantity;
+                    total += subtotal;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                    <td>${product.name}</td>
+                    <td>${product.price}</td>
+                    <td>${product.quantity}</td>
+                    <td>${subtotal}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="removeProduct(${index})">Hapus</button></td>
+                `;
+                    cartTableBody.appendChild(tr);
+                });
+
+                document.getElementById('totalAmount').value = total;
+                calculateChange();
+            }
+
+            function calculateTotalPayment() {
+                return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            }
+
+            window.removeProduct = function (index) {
+                cart.splice(index, 1);
+                localStorage.setItem('cart', JSON.stringify(cart)); // Update localStorage after removal
+                updateCartTable();
+            }
+
+            document.getElementById('cashReceived').addEventListener('input', calculateChange);
+
+            function calculateChange() {
+                const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+                const cashReceived = parseFloat(document.getElementById('cashReceived').value);
+                const change = cashReceived - totalAmount;
+
+                document.getElementById('change').value = change >= 0 ? change : 0;
+            }
+
+            // Fungsi untuk menghasilkan kode transaksi acak
+            function generateTransactionCode(length) {
+                const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                let code = '';
+                const codeLength = Math.floor(Math.random() * (8 - 5 + 1)) + 5; // Panjang kode antara 5 hingga 8 karakter
+                for (let i = 0; i < codeLength; i++) {
+                    const randomIndex = Math.floor(Math.random() * characters.length);
+                    code += characters[randomIndex];
+                }
+                return code;
+            }
+
+            document.getElementById('completeTransaction').addEventListener('click', function () {
+
+                if (cart.length === 0) {
+                    alert('Keranjang kosong. Tambahkan produk terlebih dahulu.');
+                    return;
+                }
+
+
+                const totalAmount = calculateTotalPayment();
+
+                const cashReceivedInput = document.getElementById('cashReceived');
+
+                const cashReceived = parseFloat(cashReceivedInput.value);
+                const changeAmount = parseFloat(document.getElementById('change').value);
+
+                // Periksa apakah uang yang dibayar kurang dari total belanja
+                if (cashReceived < totalAmount) {
+                    alert('Uang Anda kurang. Transaksi tidak dapat diproses.');
+                    return; // Hentikan proses transaksi
+                }
+
+                // Hitung subtotal untuk setiap item dalam keranjang
+                const cartWithSubtotals = cart.map(item => ({
+                    ...item,
+                    subtotal: item.price * item.quantity
+                }));
+
+                // Buat kode transaksi acak
+                const transactionCode = generateTransactionCode();
+
+
+                // Dapatkan data dari cart dan total pembayaran
+                const transactionData = {
+                    transactionCode: transactionCode, // Tambahkan kode transaksi
+                    date: new Date().toISOString(),
+                    items: cartWithSubtotals,
+                    totalPayment: totalAmount,
+                    cashReceived: cashReceived,
+                    change: changeAmount,
+                };
+
+                // Simpan transaksi ke Firebase
+                const transactionsRef = ref(database, 'transactions');
+                push(transactionsRef, transactionData)
+                    .then(() => {
+                        alert('Transaksi berhasil diselesaikan!');
+                        // Kosongkan keranjang setelah transaksi berhasil disimpan
+                        cart = [];
+                        localStorage.removeItem('cart');
+                        updateCartTable();
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        alert('Gagal menyelesaikan transaksi. Coba lagi.');
+                    });
+
+                // kosongkan input 
+                cashReceivedInput.value = '';
+            });
+
+        </script>
+    </body>
+
+</html>
