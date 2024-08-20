@@ -139,8 +139,6 @@
                         <hr>
                         <p><strong>Kode Transaksi:</strong> ${transaction.transactionCode}</p>
                         <p><strong>Tanggal:</strong> ${new Date(transaction.date).toLocaleString()}</p>
-                        <hr>
-                        ================================                        
                         <div class="receipt-items">
                             <h5>Daftar Produk:</h5>
                             <ul>
@@ -151,13 +149,14 @@
                                 `).join('')}
                             </ul>
                         </div>
+                        
+
+                        <hr>
+                        ================================                        
+                        
                         <hr>
                         ================================
-                        <p><strong>Total Pembayaran:</strong> Rp ${transaction.totalPayment.toLocaleString()}</p>
-                        <p><strong>Uang Diterima:</strong> Rp ${transaction.cashReceived.toLocaleString()}</p>
-                        <p><strong>Kembalian:</strong> Rp ${transaction.change.toLocaleString()}</p>
-                        <hr>
-                        <p class="text-center">Terima kasih telah berbelanja!</p>
+                        
                         <br>
                     `;
                     } else {
