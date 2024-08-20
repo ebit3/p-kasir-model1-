@@ -107,6 +107,7 @@
                         clone.querySelector('.transaction-date').textContent = new Date(transaction.date).toLocaleString();
                         clone.querySelector('.transaction-total').textContent = `Rp ${transaction.totalPayment.toLocaleString()}`;
                         clone.querySelector('.detail-link').href = `detail.html?id=${childSnapshot.key}`;
+
                         clone.querySelector('.edit-link').href = `edit.html?id=${childSnapshot.key}`;
                         clone.querySelector('.delete-link').href = `hapus.html?id=${childSnapshot.key}`;
 

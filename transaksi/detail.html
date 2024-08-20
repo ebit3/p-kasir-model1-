@@ -119,25 +119,25 @@
                         const transaction = snapshot.val();
 
                         transactionDetail.innerHTML = `
-                        <p><strong>Kode Transaksi:</strong> ${transaction.transactionCode}</p>
-                        <p><strong>Tanggal:</strong> ${new Date(transaction.date).toLocaleString()}</p>
-                        <p><strong>Total Pembayaran:</strong> Rp ${transaction.totalPayment.toLocaleString()}</p>
-                        <p><strong>Uang Diterima:</strong> Rp ${transaction.cashReceived.toLocaleString()}</p>
-                        <p><strong>Kembalian:</strong> Rp ${transaction.change.toLocaleString()}</p>
+                    <p><strong>Kode Transaksi:</strong> ${transaction.transactionCode}</p>
+                    <p><strong>Tanggal:</strong> ${new Date(transaction.date).toLocaleString()}</p>
+                    <p><strong>Total Pembayaran:</strong> Rp ${transaction.totalPayment.toLocaleString()}</p>
+                    <p><strong>Uang Diterima:</strong> Rp ${transaction.cashReceived.toLocaleString()}</p>
+                    <p><strong>Kembalian:</strong> Rp ${transaction.change.toLocaleString()}</p>
 
-                        <div class="receipt-items">
-                            <h5>Daftar Produk:</h5>
-                            <ul>
-                                ${transaction.items.map(item => `
-                                    <li>${item.name} <span>${item.quantity} x Rp ${item.price.toLocaleString()}</span></li>
-                                `).join('')}
-                            </ul>
-                        </div>
+                    <div class="receipt-items">
+                        <h5>Daftar Produk:</h5>
+                        <ul>
+                            ${transaction.items.map(item => `
+                                <li>${item.name} <span>${item.quantity} x Rp ${item.price.toLocaleString()}</span></li>
+                            `).join('')}
+                        </ul>
+                    </div>
 
-                        <div class="receipt-total">
-                            <p>Total: Rp ${transaction.totalPayment.toLocaleString()}</p>
-                        </div>
-                    `;
+                    <div class="receipt-total">
+                        <p>Total: Rp ${transaction.totalPayment.toLocaleString()}</p>
+                    </div>
+                `;
                     } else {
                         transactionDetail.innerHTML = '<p>Transaksi tidak ditemukan.</p>';
                     }
@@ -149,9 +149,27 @@
 
             loadTransactionDetail(transactionId);
 
-            document.getElementById('printButton').addEventListener('click', function () {
-                window.print();
+            document.getElementById('printButton').addEventListener('click', async function () {
+                try {
+                    const device = await navigator.bluetooth.requestDevice({
+                        filters: [{ services: ['000018f0-0000-1000-8000-00805f9b34fb'] }]  // Ganti dengan UUID yang benar
+                    });
+
+                    const server = await device.gatt.connect();
+                    const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');  // Ganti dengan UUID yang benar
+                    const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');  // Ganti dengan UUID karakteristik yang benar
+
+                    const printData = new TextEncoder().encode(transactionDetail.innerText);
+                    await characteristic.writeValue(printData);
+
+                    alert('Data telah berhasil dicetak melalui Bluetooth!');
+
+                } catch (error) {
+                    console.error('Error connecting to printer:', error);
+                    alert('Gagal menghubungkan ke printer. Silakan coba lagi.');
+                }
             });
+
 
         </script>
 
