@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Riwayat Transaksi</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+        <link rel="stylesheet" href="../index.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    </head>
+
+    <body>
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand" href="../index.html">Muji Perkasa</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="../index.html">Beranda</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../produk/index.html">Produk</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="../kategori/index.html">Kategori</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="../transaksi/index.html">Transaksi</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- content -->
+        <div class="container mt-5">
+
+            <div class="row">
+
+                <h1 class="mb-4">Riwayat Transaksi</h1>
+
+                <div class="col-lg-12 mb-4 col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-white p-3">
+                            <a href="transaksi.html" class="text-primary text-decoration-none fw-bold">
+                                <span>
+                                    <i class="bi bi-plus-lg"></i>
+                                </span>
+                                Transaksi Baru
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Kode Transaksi</th>
+                                        <th>Tanggal</th>
+                                        <th>Total Pembayaran</th>
+                                        <th>Jumlah Pembayaran</th>
+                                        <th>Kembalian</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactionTableBody">
+                                    <!-- Rows will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2024 Muji Perkasa. All Rights Reserved.</p>
+        </footer>
+
+        <template id="transaction-row-template">
+            <tr>
+                <td class="transaction-id"></td>
+                <td class="transaction-date"></td>
+                <td class="transaction-total"></td>
+                <td class="transaction-payment"></td>
+                <td class="transaction-change"></td>
+                <td>
+                    <a href="#" class="btn btn-info btn-sm detail-link">
+                        <i class="bi bi-eye-fill"></i>
+                    </a>
+                    |
+                    <a href="#" class="btn btn-danger btn-sm delete-link">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+        </template>
+
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+            import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyAPRiQzK5Pozzr79bdbnKJ4IRePqsh1F_Q",
+                authDomain: "curdprojek.firebaseapp.com",
+                databaseURL: "https://curdprojek-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "curdprojek",
+                storageBucket: "curdprojek.appspot.com",
+                messagingSenderId: "652515266449",
+                appId: "1:652515266449:web:9ff63cf0548e94340cd430",
+                measurementId: "G-B9DJ4L79G2"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+
+            const transactionTableBody = document.getElementById('transactionTableBody');
+            const template = document.getElementById('transaction-row-template').content;
+
+            function loadData() {
+                const transactionsRef = ref(database, 'transactions');
+                onValue(transactionsRef, (snapshot) => {
+                    transactionTableBody.innerHTML = ''; // Clear existing data
+
+                    if (!snapshot.exists()) {
+                        transactionTableBody.innerHTML = '<tr><td colspan="4" class="text-center">Tidak ada transaksi yang tersedia</td></tr>';
+                        return;
+                    }
+
+                    snapshot.forEach((childSnapshot) => {
+                        const transaction = childSnapshot.val();
+                        const clone = document.importNode(template, true);
+
+                        // Fill the template with data
+                        clone.querySelector('.transaction-id').textContent = transaction.transactionCode;
+                        clone.querySelector('.transaction-date').textContent = new Date(transaction.date).toLocaleString('id-ID', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true
+                        });
+
+                        clone.querySelector('.transaction-total').textContent = `Rp ${transaction.totalPayment.toLocaleString()}`;
+                        clone.querySelector('.transaction-payment').textContent = `Rp ${transaction.cashReceived.toLocaleString()}`;
+                        clone.querySelector('.transaction-change').textContent = `Rp ${transaction.change.toLocaleString()}`;
+                        clone.querySelector('.detail-link').href = `detail.html?id=${childSnapshot.key}`;
+                        clone.querySelector('.delete-link').href = `hapus.html?id=${childSnapshot.key}`;
+
+                        // Append the filled row to the table body
+                        transactionTableBody.appendChild(clone);
+                    });
+                });
+            }
+
+            loadData();
+        </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+
+</html>

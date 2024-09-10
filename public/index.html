@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Muji Perkasa</title>
+        <meta name="keywords" content="kasir muji">
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="index.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    </head>
+
+    <body>
+
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-dark">
+            <div class="container">
+                <a class="navbar-brand" href="index.html">Muji Perkasa</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="index.html">Beranda</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="produk/index.html">Produk</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="kategori/index.html">Kategori</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="transaksi/index.html">Transaksi</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+
+        <div class="container my-5">
+
+            <div class="row text-center">
+                <h1>Dashboard Kasir</h1>
+                <p class="lead">Selamat datang di aplikasi kasir Muji Perkasa Anda. Berikut adalah informasi terkait
+                    data kasir.</p>
+            </div>
+
+            <!-- Section untuk menampilkan jumlah produk dan kategori -->
+            <div class="row mb-4 g-4">
+                <div class="col-md-4">
+                    <a href="produk/index.html" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm bg-light">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-box-seam fs-1 text-primary"></i>
+                                    <div class="ms-3">
+                                        <h5 class="card-title">Jumlah Produk</h5>
+                                        <p class="card-text fs-4" id="totalProducts">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="kategori/index.html" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm bg-light">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-tags fs-1 text-success"></i>
+                                    <div class="ms-3">
+                                        <h5 class="card-title">Jumlah Kategori</h5>
+                                        <p class="card-text fs-4" id="totalCategories">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="transaksi/index.html" class="text-decoration-none">
+                        <div class="card border-0 shadow-sm bg-light">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-receipt fs-1 text-warning"></i>
+                                    <div class="ms-3">
+                                        <h5 class="card-title">Jumlah Transaksi</h5>
+                                        <p class="card-text fs-4" id="totalTransactions">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2024 Muji Perkasa. All Rights Reserved.</p>
+        </footer>
+
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+            import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyAPRiQzK5Pozzr79bdbnKJ4IRePqsh1F_Q",
+                authDomain: "curdprojek.firebaseapp.com",
+                databaseURL: "https://curdprojek-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "curdprojek",
+                storageBucket: "curdprojek.appspot.com",
+                messagingSenderId: "652515266449",
+                appId: "1:652515266449:web:9ff63cf0548e94340cd430",
+                measurementId: "G-B9DJ4L79G2"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const database = getDatabase(app);
+
+            const productTableBody = document.querySelector('tbody');
+
+            function loadData() {
+                const productsRef = ref(database, 'products');
+                const categoriesRef = ref(database, 'categories');
+                const transactionRef = ref(database, 'transactions');
+
+                // Menghitung jumlah produk
+                onValue(productsRef, (snapshot) => {
+                    const totalProducts = snapshot.size;
+                    document.getElementById('totalProducts').textContent = totalProducts;
+                });
+
+                // Menghitung jumlah kategori
+                onValue(categoriesRef, (snapshot) => {
+                    const totalCategories = snapshot.size;
+                    document.getElementById('totalCategories').textContent = totalCategories;
+                });
+
+                // Menghitung jumlah kategori
+                onValue(transactionRef, (snapshot) => {
+                    const totalTransactions = snapshot.size;
+                    document.getElementById('totalTransactions').textContent = totalTransactions;
+                });
+            }
+
+            loadData();
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+
+</html>
